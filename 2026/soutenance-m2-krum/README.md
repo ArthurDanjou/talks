@@ -21,3 +21,10 @@ dans `assets/header/`.
 - `content/` contient les dix fichiers de l'exposé principal et le fichier de
   réserve.
 - `assets/` contient les figures et les logos, sans dépendance externe.
+
+## Notes
+
+- `notes/notes.md` contient la narration et le minutage.
+- `notes/texte.md` contient le texte complet de la soutenance.
+- `notes/questions.md` classe les questions possibles du jury par intention.
+- `notes/ideas-from-report.md` rassemble les notes préparatoires.
