@@ -39,7 +39,7 @@ jobs:
             babel-french
             beamer
             graphics
-            lmodern
+            lm
             xcolor
 
       - name: Compile slides
