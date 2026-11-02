@@ -1,50 +1,82 @@
 # talks
 
-Slides &amp; code for my academic talks, in [Slidev](https://sli.dev) or LaTeX.
+Slides and source code for my academic talks, written in LaTeX (Beamer) or
+[Slidev](https://sli.dev).
 
-[Upcoming Talks](https://arthurdanjou.fr/talks)
+The complete list, with venues and dates, lives on my portfolio:
+**[arthurdanjou.fr/publications](https://arthurdanjou.fr/publications)**.
 
-###### 2026
+Published slides are served from
+[talks.arthurdanjou.fr](https://talks.arthurdanjou.fr). The root redirects to
+the portfolio, and each talk has its own path.
 
-- `fr` **Krum, une bibliothèque pour l'agrégation robuste** — _Soutenance M2 ISF, CMAP, École polytechnique_ · [PDF](https://talks.arthurdanjou.fr/2026/soutenance-m2-krum/slides.pdf)
-- `fr` **Robustesse Byzantine dans l'Apprentissage Distribué** — _Séminaire interne CMAP, Ecole Polytechnique_
+## Talks in this repository
+
+| Year | Talk | Format | Slides |
+|---|---|---|---|
+| 2026 | Krum, une bibliothèque pour l'agrégation robuste | Beamer | [PDF](https://talks.arthurdanjou.fr/2026/soutenance-m2-krum/slides.pdf) |
+
+Talks without sources in this repository are listed on the portfolio.
+
+## Structure
+
+```
+2026/
+  soutenance-m2-krum/   Beamer sources, figures, and PDF
+site/                   _redirects for the Pages site
+scripts/
+  build-slidev.sh       Build one Slidev deck with the right base path
+deploy.sh               Build the site locally and deploy
+.github/workflows/      Automatic deployment on push
+```
+
+## Build
+
+### LaTeX
+
+```sh
+cd 2026/<talk>
+latexmk -pdf slides.tex
+```
+
+The workflow compiles every `20*/*/slides.tex`. It installs a minimal TeX Live
+set, so a talk that uses an additional package must add it to the `packages`
+list in `.github/workflows/deploy.yml`.
+
+### Slidev
+
+```sh
+./scripts/build-slidev.sh 2026/<talk>
+```
+
+The script installs the dependencies, then runs `slidev build` with the base
+path derived from the directory. It requires a committed `bun.lock`.
 
 ## Deploy
+
+A push to `master` touching `20*/**` or `site/**` triggers the GitHub Actions
+workflow. It builds every talk, assembles `dist/`, and deploys to the Cloudflare
+Pages project `talks`.
+
+The workflow needs two repository secrets:
+
+- `CLOUDFLARE_API_TOKEN`, with the Cloudflare Pages: Edit permission
+- `CLOUDFLARE_ACCOUNT_ID`
+
+To deploy locally:
 
 ```sh
 ./deploy.sh
 ```
 
-Le script assemble `dist/` à partir de `site/_redirects`, des PDF et des builds
-Slidev, puis publie sur le projet Cloudflare Pages `talks`.
+## Adding a talk
 
-Le même déploiement est automatisé par GitHub Actions à chaque push sur
-`master`. Le workflow `.github/workflows/deploy.yml` demande deux secrets :
-`CLOUDFLARE_API_TOKEN`, avec le droit Cloudflare Pages: Edit, et
-`CLOUDFLARE_ACCOUNT_ID`.
+Create `2026/<slug>/` with the sources for the format you use:
 
-## Ajouter un talk LaTeX
+- LaTeX: `slides.tex`, `content/`, `assets/`, and `latexmkrc`. The PDF is
+  published at `/2026/<slug>/slides.pdf`.
+- Slidev: `slides.md`, `package.json`, and `bun.lock`. The deck is published at
+  `/2026/<slug>/`.
 
-Placer `slides.tex` dans `2026/mon-talk/`, avec ses fichiers `content/`,
-`assets/` et `latexmkrc`. Le workflow compile chaque `20*/*/slides.tex` et
-publie le PDF à `/2026/mon-talk/slides.pdf`.
-
-Le workflow installe un ensemble minimal de paquets TeX Live. Si le talk
-utilise un paquet supplémentaire, l'ajouter à la liste `packages` de
-`.github/workflows/deploy.yml`.
-
-## Ajouter un talk Slidev
-
-Créer un dossier `2026/mon-talk/` avec `slides.md`, `package.json` et
-`bun.lock`. Tu peux en avoir plusieurs : chaque dossier `20*/*/` qui contient
-un `slides.md` est construit avec `--base /20xx/mon-talk/` et publié à cette
-adresse.
-
-Pour construire un deck :
-
-```sh
-./scripts/build-slidev.sh 2026/mon-talk
-```
-
-Le script installe les dépendances et calcule automatiquement `--base` et
-`--out` à partir du chemin du dossier.
+Both formats can be added in the same commit, and one workflow run builds both.
+A failure in one build blocks the deployment of the whole site.
