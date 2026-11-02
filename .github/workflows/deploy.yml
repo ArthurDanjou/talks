@@ -8,7 +8,11 @@ on:
   push:
     branches: [master]
     paths:
-      - '20*/**'
+      - '20*/*/slides.tex'
+      - '20*/*/slides.pdf'
+      - '20*/*/content/**'
+      - '20*/*/assets/**'
+      - '20*/*/latexmkrc'
       - 'site/**'
   workflow_dispatch:
 
