@@ -1,0 +1,35 @@
+% La comparaison situe la bibliothèque et ses limites.
+
+% MIN 25:30 à 26:30. Comparaison des bibliothèques retenues pour le rapport.
+\begin{frame}{Face à cinq bibliothèques comparables}
+    Pour la comparaison, j'ai retenu ByzFL, FedLab, Blades,
+    FL-Byzantine-Library et ByzPy, dont les composants d'agrégation byzantine
+    sont ouverts et comparables.
+
+    \medskip
+    {\renewcommand{\arraystretch}{1.2}
+    \begin{tabular}{@{}p{0.18\textwidth}p{0.34\textwidth}p{0.40\textwidth}@{}}
+        \textbf{Critère} & \textbf{Krum} & \textbf{Dans la comparaison} \\
+        \hline
+        Catalogue & 11 règles et 5 attaques. & Certaines bibliothèques proposent plus de composants. \\
+        Zéro-copie & \code{Model} partage la mémoire. & L'accès copie les valeurs ou n'a pas d'équivalent. \\
+        Protocoles & Trois protocoles documentés. & Cadres génériques ou suites. \\
+        Relance & Recalcul des résultats périmés. & ByzFL saute les exécutions terminées.
+    \end{tabular}}
+
+    \medskip
+    J'ai analysé ces composants.\\
+    {\small Comptes d'août 2026, audités en septembre 2026.}
+\end{frame}
+
+% MIN 26:30 à 27:00. Limites du catalogue et des conditions d'exécution.
+\begin{frame}{Les limites actuelles}
+    \begin{itemize}
+        \item Le catalogue reste ciblé. Certaines bibliothèques proposent plus de composants.
+        \item Les pré-agrégateurs ne sont pas inclus. Appliqués avant l'agrégation,
+              ils peuvent borner les normes ou réduire le bruit.
+        \item Les expériences s'exécutent séquentiellement sur une seule machine.
+              Les échanges entre participants sont simulés. On évalue donc les
+              protocoles, pas un déploiement distribué réel.
+    \end{itemize}
+\end{frame}

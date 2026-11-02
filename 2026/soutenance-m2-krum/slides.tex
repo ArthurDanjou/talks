@@ -1,0 +1,181 @@
+% Soutenance M2 ISF — Agrégation byzantine-résiliente : la librairie Krum
+% Auteur : Arthur Danjou — CMAP, École Polytechnique
+% Build : latexmk -pdf slides.tex (moteur pdflatex, sans biber)
+% Durée : 29 minutes de contenu et une minute de marge.
+% Les commentaires MIN indiquent les repères de l'horloge.
+\documentclass[aspectratio=169, 10pt]{beamer}
+
+% --- Langue et fontes ---
+\usepackage[utf8]{inputenc}
+\usepackage[T1]{fontenc}
+\usepackage[french]{babel}
+\usepackage{lmodern}
+
+% --- Maths ---
+\usepackage{amsmath, amssymb}
+
+% --- Présentation institutionnelle ---
+\usetheme{default}
+\setbeamertemplate{navigation symbols}{}
+\setbeamertemplate{items}[circle]
+\setbeamertemplate{enumerate items}[default]
+\setbeamersize{text margin left=8mm,text margin right=8mm}
+\linespread{1.12}
+\setlength{\parskip}{0.45em}
+
+% Les deux bleus proviennent de la charte de l'École polytechnique.
+\definecolor{defenseBlue}{HTML}{01426A}
+\definecolor{defenseAccent}{HTML}{0085CA}
+\definecolor{defenseInk}{HTML}{25282A}
+\setbeamercolor{normal text}{fg=defenseInk,bg=white}
+\setbeamercolor{background canvas}{bg=white}
+\setbeamercolor{structure}{fg=defenseBlue}
+\setbeamercolor{alerted text}{fg=defenseBlue}
+\setbeamercolor{title}{fg=defenseBlue}
+\setbeamercolor{subtitle}{fg=defenseInk}
+\setbeamercolor{frametitle}{fg=defenseBlue,bg=white}
+\setbeamercolor{section title}{fg=defenseBlue}
+\setbeamercolor{subsection in toc}{fg=defenseInk}
+\setbeamercolor{block title}{fg=defenseBlue,bg=white}
+\setbeamercolor{block body}{fg=defenseInk,bg=white}
+\setbeamercolor{footline}{fg=defenseBlue,bg=white}
+\setbeamerfont{title}{family=\rmfamily,size=\LARGE,series=\bfseries}
+\setbeamerfont{subtitle}{family=\sffamily,size=\large,series=\mdseries}
+\setbeamerfont{frametitle}{family=\rmfamily,size=\large,series=\bfseries}
+\setbeamerfont{section title}{family=\rmfamily,size=\LARGE,series=\bfseries}
+\setbeamerfont{block title}{size=\normalsize,series=\bfseries}
+\setbeamerfont{footline}{size=\scriptsize}
+
+\setbeamertemplate{title page}{%
+    \raggedright
+    \begin{minipage}[c]{0.36\textwidth}
+        \includegraphics[width=39mm]{assets/header/logo dauphine.jpg}
+    \end{minipage}\hfill
+    \begin{minipage}[c]{0.16\textwidth}
+        \centering
+        \includegraphics[width=11mm]{assets/header/logo cmap.png}
+    \end{minipage}\hfill
+    \begin{minipage}[c]{0.36\textwidth}
+        \raggedleft
+        \includegraphics[width=42mm]{assets/header/logo-polytechnique.png}
+    \end{minipage}
+    \par\vspace{6mm}
+    {\usebeamerfont{title}\usebeamercolor[fg]{title}\inserttitle\par}
+    \vspace{2mm}
+    {\usebeamerfont{subtitle}\insertsubtitle\par}
+    \vspace{3mm}
+    {\color{defenseBlue}\rule{\textwidth}{0.6pt}\par}
+    \vspace{3mm}
+    {\small\bfseries\insertauthor\par}
+    \smallskip
+    {\footnotesize\insertinstitute\par}
+    \medskip
+    {\footnotesize\insertdate\par}
+}
+\renewcommand{\maketitle}{\frame[plain,noframenumbering]{\titlepage}}
+
+% Les sous-parties des primitives sont visibles dans les titres de contenu.
+\setbeamertemplate{frametitle}{%
+    \nointerlineskip
+    \begin{beamercolorbox}[wd=\paperwidth,leftskip=8mm,rightskip=8mm]{frametitle}
+        \setlength{\parskip}{0pt}
+        \vskip3mm
+        \usebeamerfont{frametitle}\strut
+        \ifnum\value{section}=1
+            \ifnum\value{subsection}>0
+                {\color{defenseBlue}\insertsectionnumber.\insertsubsectionnumber}\enspace
+            \fi
+        \fi
+        \insertframetitle\strut\par
+        \vskip1.5mm
+    \end{beamercolorbox}
+    \nointerlineskip
+    \hbox{\color{defenseBlue}\rule{\dimexpr\paperwidth-16mm\relax}{0.5pt}}
+    \vskip1mm
+}
+
+\makeatletter
+\setbeamertemplate{footline}{%
+    \ifbeamer@inappendix\else
+        \begin{beamercolorbox}[wd=\paperwidth,leftskip=8mm,rightskip=8mm,ht=3ex,dp=1.5ex]{footline}
+            \usebeamerfont{footline}
+            Arthur Danjou \enspace\textbar\enspace CMAP
+            \hfill\insertframenumber/\inserttotalframenumber
+        \end{beamercolorbox}
+    \fi
+}
+\makeatother
+
+% Les transitions ne modifient pas les numéros des slides de contenu.
+\setbeamertemplate{section page}{%
+    \raggedright
+    {\usebeamerfont{section title}\usebeamercolor[fg]{section title}%
+        \insertsectionnumber.\enspace\insertsectionhead\par}
+    \medskip
+    {\color{defenseBlue}\rule{24mm}{0.7pt}\par}
+    \ifnum\value{section}=1
+        \bigskip
+        \tableofcontents[currentsection,sectionstyle=hide/hide,subsectionstyle=show/show/hide]
+    \fi
+}
+\setbeamertemplate{subsection in toc}{%
+    \leavevmode\inserttocsectionnumber.\inserttocsubsectionnumber\enspace\inserttocsubsection\par
+}
+\AtBeginSection[]{%
+    \begin{frame}[plain,c,noframenumbering]
+        \sectionpage
+    \end{frame}
+}
+
+% --- Figures ---
+\usepackage{graphicx}
+\usepackage{appendixnumberbeamer}
+\graphicspath{{assets/fig/}}
+
+% --- Métadonnées ---
+\title{Krum, une bibliothèque\\pour l'agrégation robuste}
+\subtitle{Apprentissage distribué robuste}
+\author{Arthur Danjou}
+\institute{M2 ISF, Université Paris-Dauphine -- PSL \\ Stage au CMAP, École polytechnique, encadré par El-Mahdi El-Mhamdi}
+\date{Soutenance du 2 novembre 2026}
+
+% --- Macros locales (mêmes notations que le mémoire, sans dépendance externe) ---
+\newcommand{\textcode}[1]{\texttt{#1}}
+\newcommand{\code}[1]{\texttt{#1}}
+\newcommand{\vect}[1]{\boldsymbol{#1}}
+\newcommand{\norm}[1]{\lVert #1 \rVert}
+\newcommand{\nworkers}{n}
+\newcommand{\nbyz}{f}
+\newcommand{\nselected}{m}
+\newcommand{\krum}{\textcode{Krum}}
+\newcommand{\mkrum}{\textcode{MultiKrum}}
+\newcommand{\monna}{\textcode{MoNNA}}
+\newcommand{\bulyan}{\textcode{Bulyan}}
+\newcommand{\average}{\textcode{Average}}
+\newcommand{\median}{\textcode{Median}}
+\newcommand{\nna}{\textcode{NNA}}
+\newcommand{\signflip}{\textcode{SignFlip}}
+\newcommand{\smallperturbation}{\textcode{SmallPerturbation}}
+
+\begin{document}
+
+\input{content/01-cadre-stage.tex}
+\input{content/02-contexte.tex}
+\input{content/03-mission.tex}
+\section{Primitives}
+\input{content/04-primitives.tex}
+\section{Simulations}
+\input{content/05-simulations.tex}
+\section{Orchestration}
+\input{content/06-orchestration.tex}
+\section{Qualité logicielle}
+\input{content/07-qualite-logicielle.tex}
+\section{Expériences}
+\input{content/08-validation.tex}
+\section{Positionnement et limites}
+\input{content/09-comparaison-limites.tex}
+\section{Bilan et perspectives}
+\input{content/10-conclusion.tex}
+\input{content/11-reserves.tex}
+
+\end{document}

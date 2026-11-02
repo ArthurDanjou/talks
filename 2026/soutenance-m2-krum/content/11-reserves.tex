@@ -1,0 +1,305 @@
+\appendix
+
+% Séparation blanche entre l'exposé et les slides de réserve.
+\begin{frame}[plain,noframenumbering]
+\end{frame}
+
+% RÉSERVE. Étude collective MoNNA, hors du périmètre personnel d'Arthur.
+\begin{frame}{\monna{} décentralisé : étude de cas ICML 2023}
+    \small
+    L'équipe a réalisé cette simulation et analysé ses résultats.
+    Mon travail portait sur le cas centralisé.
+
+    MNIST réduit : $n=16$, $f=5$, 200 tours, \signflip{} d'amplitude 1.
+
+    {\centering
+        \includegraphics[width=\textwidth]{"MoNNA ICML 2023.png"}
+        \par}
+
+    La règle \nna{} moyenne les modèles les plus proches du modèle local.\\
+    Exactitude finale sous attaque : \nna{} $\approx84\,\%$,
+    \average{} $\approx10\,\%$. Sans attaque : $\approx87\,\%$.
+
+    Farhadkhani et al., ICML 2023.
+\end{frame}
+
+% RÉSERVE. Extraits du listing de l'annexe 08 du mémoire.
+\begin{frame}[fragile]{Une expérience centralisée}
+    \small
+    \begin{verbatim}
+sim = KrumSimulation(
+    model_cls=Krum2017MLPMnist,
+    train_datasets=worker_datasets, test_set=test_set,
+    aggregator=aggregator, attack=attack,
+    n=n, f=f, rounds=100, batch_size=32, lr=0.1, seed=seed,
+)
+sim.setup()
+
+loss = Metric("loss", dtype=float)
+accuracy = Metric("accuracy", dtype=float)
+for step in range(100):
+    sim.step()
+    if step % 10 == 0:
+        test_loss, test_accuracy = sim.evaluate()
+        loss.push(step, test_loss, skip_if_exists=True)
+        accuracy.push(step, test_accuracy, skip_if_exists=True)
+    \end{verbatim}
+
+    La fonction d'évaluation calcule la perte et l'exactitude,
+    c'est-à-dire la proportion de prédictions correctes.
+
+    \medskip
+    {\footnotesize Extrait du listing de l'annexe 08.}
+\end{frame}
+
+% RÉSERVE. Balayage de configurations tiré du listing de l'annexe 08.
+\begin{frame}[fragile]{Faire varier les configurations d'une campagne}
+    \small
+    \begin{verbatim}
+with Orchestrator("krum_byzantine_study") as orch:
+    for n, f in [(13, 2), (25, 5)]:
+        for aggregator in [Average, Krum, Bulyan]:
+            for attack in [ALIEAttack, SignFlipAttack, None]:
+                orch.run(
+                    experiment, n=n, f=f,
+                    aggregator=aggregator, attack=attack, seed=42,
+                )
+
+loss_df = orch.get("loss").to_pandas()
+acc_df = orch.get("accuracy").to_pandas()
+    \end{verbatim}
+
+    \code{None} signifie qu'aucune attaque n'est appliquée.
+    Les mesures sont converties en tableaux avec la bibliothèque pandas.
+    L'orchestrateur a été développé par Sébastien Rouault et Peva Blanchard.
+
+    \medskip
+    {\footnotesize Extrait du listing de l'annexe 08.}
+\end{frame}
+
+% RÉSERVE. Notations des onze règles d'agrégation implémentées.
+\begin{frame}{Notations des agrégateurs : moyenne et coordonnées}
+    \small
+    Soient $\vect{x}_1,\ldots,\vect{x}_n\in\mathbb{R}^d$ les gradients reçus.
+    Pour une coordonnée $k$, $x_{(1),k}\leq\cdots\leq x_{(n),k}$ désigne
+    les valeurs triées.
+
+    \begin{align*}
+        \texttt{Average}:\quad
+        & A=\frac{1}{n}\sum_{i=1}^{n}\vect{x}_i.
+        \\
+        \texttt{Median}:\quad
+        & M_k=\operatorname{med}_{i=1,\ldots,n}x_{i,k}.
+        \\
+        \texttt{TrimmedMean}:\quad
+        & T_k=\frac{1}{n-2f}\sum_{r=f+1}^{n-f}x_{(r),k}.
+    \end{align*}
+    \texttt{TrimmedMean} retire donc les $f$ valeurs extrêmes de chaque côté,
+    séparément pour chaque coordonnée.
+\end{frame}
+
+% RÉSERVE. Krum, MultiKrum et Bulyan.
+\begin{frame}{Notations des agrégateurs : distances et filtrage}
+    \small
+    Pour chaque $i$, $\mathcal{N}_i$ contient les $n-f-2$ gradients les plus
+    proches de $\vect{x}_i$ parmi les autres gradients.
+    \[
+        s_i=\sum_{j\in\mathcal{N}_i}\norm{\vect{x}_i-\vect{x}_j}^{2},
+        \qquad i^*=\arg\min_i s_i.
+    \]
+    \begin{align*}
+        \texttt{Krum}:\quad & \vect{x}_{i^*}.
+        \\
+        \texttt{MultiKrum}:\quad
+        & \frac{1}{m}\sum_{i\in I_m}\vect{x}_i,
+          \quad I_m=\text{indices des $m$ plus petits scores }s_i.
+    \end{align*}
+    Les scores sont calculés une seule fois dans la bibliothèque.
+
+    \medskip
+    \texttt{Bulyan} sélectionne itérativement $\theta=n-2f-2$ candidats avec
+    \texttt{MultiKrum}. Pour chaque coordonnée $k$, il moyenne les
+    $\theta-2f$ valeurs sélectionnées les plus proches de leur médiane.
+    \[
+        B_k=\frac{1}{\theta-2f}\sum_{r\in J_k}x_{(r),k},
+        \qquad |J_k|=\theta-2f.
+    \]
+\end{frame}
+
+% RÉSERVE. Méthodes géométriques et énumératives.
+\begin{frame}{Notations des agrégateurs : géométrie et recherche}
+    \small
+    \begin{align*}
+        \texttt{GeoMed}:\quad
+        & \arg\min_{\vect{y}\in\mathbb{R}^d}
+          \sum_{i=1}^{n}\norm{\vect{y}-\vect{x}_i}.
+        \\
+        \texttt{Medoid}:\quad
+        & \arg\min_{\vect{x}\in\{\vect{x}_1,\ldots,\vect{x}_n\}}
+          \sum_{i=1}^{n}\norm{\vect{x}-\vect{x}_i}.
+        \\
+        \texttt{Brute}:\quad
+        & \frac{1}{|S^*|}\sum_{i\in S^*}\vect{x}_i,
+          \quad S^*=\arg\min_{\substack{S\subseteq\{1,\ldots,n\}\\|S|=n-f}}
+          \max_{i,j\in S}\norm{\vect{x}_i-\vect{x}_j}.
+    \end{align*}
+    \texttt{GeoMed} minimise la somme des distances sans imposer que la sortie
+    soit un gradient reçu. \texttt{Medoid} impose cette contrainte.
+    \texttt{Brute} choisit le sous-ensemble de diamètre minimal.
+\end{frame}
+
+% RÉSERVE. AKSEL et NNA.
+\begin{frame}{Notations des agrégateurs : pivot et voisinage}
+    \small
+    \texttt{AKSEL} prend pour pivot $\vect{p}$ la médiane coordonnée par
+    coordonnée, puis moyenne les $n-f$ gradients les plus proches de ce pivot.
+    \[
+        p_k=\operatorname{med}_{i=1,\ldots,n}x_{i,k},
+        \qquad
+        \operatorname{AKSEL}(\vect{x}_{1:n})=
+        \frac{1}{n-f}\sum_{i\in I_{n-f}}\vect{x}_i,
+        \quad I_{n-f}=\text{indices les plus proches de }\vect{p}.
+    \]
+
+    \medskip
+    Pour \texttt{NNA}, $\vect{z}^{(0)}$ est le pivot et $q$ est le nombre
+    de vecteurs à agréger, paramètre \texttt{num\_closest}. L'application
+    $\tau$ ordonne les autres vecteurs reçus par distance croissante au pivot,
+    de sorte que
+    la sortie inclut le pivot et ses $q-1$ plus proches voisins :
+    \[
+        \operatorname{NNA}=\frac{1}{q}\sum_{r=0}^{q-1}
+        \vect{z}^{(\tau(r))},
+        \qquad \tau(0)=0.
+    \]
+    Dans \texttt{MoNNA}, le modèle local sert de pivot et $q=n-2f$.
+\end{frame}
+
+% RÉSERVE. Notations des cinq attaques implémentées.
+\begin{frame}{Notations des attaques : gradients honnêtes et statistiques}
+    \small
+    On note $\mathcal{H}$ l'ensemble des gradients honnêtes,
+    $|\mathcal{H}|=n-f$, et
+    $\bar{\vect{g}}=\frac{1}{n-f}\sum_{i\in\mathcal{H}}\vect{g}_i$.
+    Pour chaque coordonnée $k$, $\mu_k$ et $\sigma_k$ sont la moyenne et
+    l'écart-type honnêtes.
+
+    \begin{align*}
+        \texttt{SignFlip}:\quad
+        & \vect{b}=-c\,\bar{\vect{g}}.
+        \\
+        \texttt{ALIE}:\quad
+        & b_k=\mu_k\pm z\sigma_k,
+          \quad\text{avec le signe choisi pour l'attaque.}
+        \\
+        \texttt{Gaussian}:\quad
+        & \vect{b}\sim\mathcal{N}(\mu_G\vect{1},\sigma_G^2 I_d),
+          \quad\text{indépendamment des gradients honnêtes.}
+    \end{align*}
+    Les $f$ participants malveillants envoient chacun le vecteur ainsi défini.
+    Pour \texttt{ALIE}, $z$ règle l'écart aux statistiques honnêtes. Pour
+    \texttt{Gaussian}, $\mu_G$ et $\sigma_G$ sont les paramètres du bruit.
+\end{frame}
+
+% RÉSERVE. Attaques ciblées de la vulnérabilité cachée.
+\begin{frame}{Notations des attaques : négation et perturbation}
+    \small
+    \texttt{FullGradientNegation} suppose connu le gradient calculé sur
+    l'ensemble des données :
+    \[
+        \vect{b}=-\kappa\vect{g}_{\mathrm{full}}.
+    \]
+
+    \medskip
+    \texttt{SmallPerturbation} part de la moyenne honnête et la décale dans
+    une direction $\vect{e}$. L'attaque choisit le plus grand décalage qui
+    reste sélectionné par l'agrégateur ciblé :
+    \[
+        \vect{b}=B(\gamma_m)=\bar{\vect{g}}+\gamma_m\vect{e},
+        \qquad
+        \gamma_m=\sup\{\gamma\geq0:
+        B(\gamma)\text{ est sélectionné}\}.
+    \]
+    Par défaut, $\vect{e}$ est le vecteur de base de la coordonnée présentant
+    la plus forte variance honnête. Les $f$ attaquants envoient ce même vecteur.
+\end{frame}
+
+% RÉSERVE. Définition formelle du modèle de menace et de la résilience.
+\begin{frame}{Modèle de menace et résilience}
+    \small
+    Parmi les $n$ gradients reçus, au plus $f$ peuvent être arbitraires.
+    Ils peuvent être coordonnés et dépendre des gradients honnêtes.
+    Ces derniers sont supposés indépendants, de même loi, et d'espérance
+    $\vect{g}$.
+
+    \medskip
+    Une règle $F$ est $(\alpha,f)$-résiliente si son espérance reste orientée
+    vers le vrai gradient et si ses fluctuations restent contrôlées :
+    \[
+        \langle\mathbb{E}[F],\vect{g}\rangle
+        \geq (1-\sin\alpha)\norm{\vect{g}}^2>0,
+        \qquad 0\leq\alpha<\frac{\pi}{2}.
+    \]
+    Les moments $\mathbb{E}\norm{F}^{r}$, pour $r=2,3,4$, doivent aussi être
+    bornés en fonction des moments des gradients honnêtes.
+
+    \medskip
+    Cette propriété ne suffit pas seule à prouver la convergence : le bruit
+    honnête et le calendrier du pas d'apprentissage interviennent également.
+\end{frame}
+
+% RÉSERVE. Écarts des implémentations documentés dans le mémoire.
+\begin{frame}{Écarts entre publication et implémentation}
+    \small
+    \begin{tabular}{@{}p{0.18\textwidth}p{0.39\textwidth}p{0.37\textwidth}@{}}
+        \textbf{Règle} & \textbf{Publication} & \textbf{Bibliothèque} \\
+        \hline
+        \texttt{MultiKrum} &
+        Sélection itérative, avec recalcul après chaque retrait. &
+        Scores calculés une fois, puis moyenne des $m$ plus petits. \\
+        \texttt{Bulyan} &
+        Sélection de $n-2f$ candidats. &
+        Sélection de $n-2f-2$ candidats, puis filtrage coordonnée par coordonnée.
+    \end{tabular}
+
+    \medskip
+    Pour $m=1$, \texttt{MultiKrum} coïncide avec \texttt{Krum}.
+    Les résultats des expériences caractérisent les variantes effectivement
+    codées. Une garantie théorique ne se transfère pas automatiquement à une
+    variante modifiée.
+\end{frame}
+
+% RÉSERVE. Résultats et portée des deux expériences centralisées.
+\begin{frame}{Ce que montrent les deux expériences}
+    \small
+    \begin{block}{Spambase, paramètres de 2017}
+        $n=20$, $f=6$, \texttt{MultiKrum} avec $m=14$, \texttt{SignFlip}
+        d'amplitude 10. La moyenne diverge dans cette simulation ;
+        \texttt{MultiKrum} poursuit l'apprentissage.
+        Le réglage $m=14$ dépasse la borne théorique $m\leq5$.
+    \end{block}
+    \begin{block}{MNIST, attaque de 2018}
+        $n=39$, $f=9$, $\gamma=4$. L'exactitude plafonne vers 90\,\% pour
+        \texttt{Krum}, contre environ 94\,\% pour \texttt{Bulyan} et 95\,\%
+        pour la référence saine.
+    \end{block}
+    Ces courbes illustrent les phénomènes visés dans ces réglages. Elles
+    n'établissent ni une garantie théorique ni une stabilité statistique
+    sur plusieurs graines.
+\end{frame}
+
+% RÉSERVE. Distinction entre fidélité du protocole et répétabilité.
+\begin{frame}{Fidélité, répétabilité et portée}
+    \small
+    \begin{itemize}
+        \item \textbf{Fidélité :} conserver les mécanismes utiles du protocole
+        étudié et documenter les adaptations de la simulation.
+        \item \textbf{Répétabilité :} une graine fixe les tirages pseudo-aléatoires.
+        Dans l'environnement déterministe documenté, relancer la même
+        configuration donne les mêmes résultats.
+        \item \textbf{Limite :} une graine ne mesure pas la variabilité entre
+        exécutions. Il faudrait plusieurs graines et une analyse statistique.
+        \item \textbf{Périmètre :} les expériences tournent séquentiellement sur
+        une machine ; les échanges entre workers sont simulés.
+    \end{itemize}
+\end{frame}

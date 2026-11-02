@@ -1,0 +1,30 @@
+% MIN 15:00 à 16:00. Partir des reproductions menées de zéro.
+\begin{frame}{La simulation prend en charge la boucle d'entraînement}
+    En reproduisant des expériences à partir de zéro, j'ai dû réécrire
+    la même boucle d'entraînement.
+
+    \medskip
+    \textbf{L'utilisateur} choisit la répartition des données entre participants.
+
+    \begin{block}{La simulation automatise le protocole}
+        \begin{enumerate}
+            \item Former et tirer les petits lots de données.
+            \item Calculer les gradients locaux.
+            \item Appliquer l'attaque et l'agrégation.
+            \item Mettre à jour le modèle.
+        \end{enumerate}
+    \end{block}
+\end{frame}
+
+% MIN 16:00 à 17:00. Définir la fidélité d'une simulation.
+\begin{frame}{Fidélité des simulations}
+    \begin{block}{L'objectif}
+        La simulation permet de faire varier les paramètres de l'expérience tout en gardant
+        la même boucle d'entraînement sous PyTorch.
+    \end{block}
+    \medskip
+    \begin{block}{Fidélité au protocole}
+        Une simulation fidèle conserve les mécanismes du protocole nécessaires
+        à l'étude du phénomène visé et documente les adaptations apportées.
+    \end{block}
+\end{frame}

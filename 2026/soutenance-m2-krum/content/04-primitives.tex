@@ -1,0 +1,176 @@
+% Les primitives constituent les briques de calcul de la bibliothèque.
+% Les contributions personnelles sont précisées dans content/03-mission.tex.
+
+\subsection{Agrégateurs}
+
+% MIN 8:00 à 9:00. Présenter les mécanismes et la moyenne de référence.
+\begin{frame}{Les familles d'agrégateurs}
+    J'ai pris en charge leur implémentation et leurs tests.
+
+    \medskip
+    \begin{tabular}{@{}p{0.24\textwidth}p{0.72\textwidth}@{}}
+        \textbf{Distances} & Sélection de gradients proches. \\[0.35em]
+        \textbf{Coordonnées} & Filtrage de chaque coordonnée séparément. \\[0.35em]
+        \textbf{Hybrides} & Combinaison de sélection et de filtrage. \\[0.35em]
+        \textbf{Géométrie} & Recherche d'un centre des vecteurs.
+    \end{tabular}
+
+    \begin{block}{La moyenne comme référence : \average{}}
+        Pour les gradients reçus $\vect{g}_1,\ldots,\vect{g}_{\nworkers}$,
+        \[
+            \operatorname{Average}=\frac{1}{\nworkers}
+            \sum_{i=1}^{\nworkers}\vect{g}_i.
+        \]
+        La moyenne inclut toutes les contributions, même arbitraires.
+    \end{block}
+    % À l'oral, rappeler l'appui sur les règles publiées et le code de Sébastien.
+\end{frame}
+
+% MIN 9:00 à 10:35. Lire le score, puis la moyenne de la variante implémentée.
+% L'annexe du rapport précise l'écart avec la construction itérative publiée.
+\begin{frame}{\mkrum{} : sélectionner puis moyenner}
+    Au plus $\nbyz$ des $\nworkers$ participants sont \textbf{malhonnêtes}.
+
+    \medskip
+    $\mathcal N_i$ contient les $\nworkers-\nbyz-2$ plus proches voisins
+    de $\vect{g}_i$ parmi les \textbf{autres} gradients.
+    \[
+        s_i=\sum_{j\in\mathcal N_i}
+        \norm{\vect{g}_i-\vect{g}_j}^{2}.
+    \]
+    On calcule les scores une seule fois. $I_{\nselected}$ contient les indices
+    des $\nselected$ gradients ayant les scores les plus faibles.
+    \[
+        \operatorname{MultiKrum}(\vect{g}_1,\ldots,\vect{g}_{\nworkers})
+        =\frac{1}{\nselected}\sum_{i\in I_{\nselected}}\vect{g}_i.
+    \]
+    Pour $\nselected=1$, on retrouve \textbf{\krum{}}.
+    Pour $\nselected=n$, on retrouve \textbf{Average}.
+\end{frame}
+
+\subsection{Attaques}
+
+% MIN 10:35 à 11:25. Expliquer les deux attaques utilisées dans les résultats.
+\begin{frame}{Deux attaques pour éprouver les agrégateurs}
+    \alert{\textbf{Rappel : scénario d'omniscience.}}\\
+    Les attaquants ont accès aux gradients honnêtes.
+
+    \medskip
+    On note $\bar{\vect{g}}$ la moyenne des gradients honnêtes.
+    \begin{columns}[T,onlytextwidth]
+        \begin{column}{0.47\textwidth}
+            \begin{block}{\signflip{}}
+                L'attaque inverse et amplifie la moyenne des gradients honnêtes.
+                \[
+                    \vect{b}=-\lambda\bar{\vect{g}},\qquad\lambda>0.
+                \]
+                Tous les participants malhonnêtes envoient ce même vecteur.
+            \end{block}
+        \end{column}
+        \begin{column}{0.49\textwidth}
+            \begin{block}{\smallperturbation{}}
+                L'attaque décale une seule coordonnée de la moyenne honnête.
+                \[
+                    \vect{b}=\bar{\vect{g}}+\gamma\vect{e}_k.
+                \]
+                $\vect{e}_k$ est le vecteur de base de la coordonnée $k$.
+                Le vecteur cherche à rester sélectionnable.
+            \end{block}
+        \end{column}
+    \end{columns}
+    % La coordonnée de SmallPerturbation a la plus forte variance honnête.
+    % L'expérience de 2018 utilise une amplitude fixée, présentée avec ses réglages.
+\end{frame}
+
+\subsection{Partitionnement des données}
+
+% MIN 11:25 à 12:10. Distinguer hétérogénéité honnête et attaque.
+\begin{frame}{Les données locales peuvent aussi différer}
+    \begin{columns}[T,onlytextwidth]
+        \begin{column}{0.47\textwidth}
+            \begin{block}{Données IID}
+                Observations indépendantes et de même loi.
+
+                \smallskip
+                Répartition aléatoire en sous-jeux comparables.
+            \end{block}
+        \end{column}
+        \begin{column}{0.49\textwidth}
+            \begin{block}{Données non IID}
+                Les lois locales peuvent différer.
+
+                \smallskip
+                Exemple : les hôpitaux accueillent des populations différentes.
+            \end{block}
+        \end{column}
+    \end{columns}
+    \begin{block}{Partitionneurs}
+        Distribuer les données entre participants et régler leur hétérogénéité
+        pour comparer les agrégateurs.
+    \end{block}
+    \alert{Même sans attaque, les gradients honnêtes peuvent différer.}
+\end{frame}
+
+\subsection{Extension des primitives}
+
+% MIN 12:10 à 12:55. Montrer comment ajouter une primitive réutilisable.
+\begin{frame}{Une seule méthode pour ajouter une règle}
+    Une méthode est une fonction associée à un composant logiciel.
+
+    \medskip
+    \begin{tabular}{@{}ll@{}}
+        \textbf{Primitive} & \textbf{Méthode à implémenter} \\[0.4em]
+        Agrégateur & \code{aggregate} \\[0.3em]
+        Attaque & \code{generate} \\[0.3em]
+        Partitionneur & \code{partition}
+    \end{tabular}
+
+    L'interface commune permet de réutiliser la primitive dans les simulations
+    sans réécrire leur boucle.
+
+    \medskip
+    Au total, la bibliothèque comprend onze règles, cinq attaques,
+    quatre partitionneurs et six architectures de modèles.
+\end{frame}
+
+\subsection{Modèles pour l'agrégation}
+
+% MIN 12:55 à 15:00. Expliquer le rôle du composant sans détailler l'implémentation.
+% Le dessin utilise picture et les couleurs Beamer, sans dépendance supplémentaire.
+\begin{frame}{Préparer les modèles pour l'agrégation}
+    PyTorch stocke les paramètres et les gradients par couche.
+    Pour les agréger, le composant \code{Model} les présente sous forme
+    d'une suite de valeurs.
+
+    \begin{center}
+        \begingroup
+        \setlength{\unitlength}{1mm}
+        \setlength{\fboxsep}{0pt}
+        \begin{picture}(112,33)
+            \put(0,25){\makebox(39,6)[l]{Valeurs par couche}}
+            \put(42,23){\colorbox{structure.fg!15}{\makebox(44,10){$\begin{matrix}a&b\\c&d\end{matrix}$}}}
+            \put(86,23){\colorbox{defenseAccent!20}{\makebox(22,10){$[\,e\quad f\,]$}}}
+            \put(64,22){\vector(0,-1){5}}
+            \put(64,17){\vector(0,1){5}}
+            \put(97,22){\vector(0,-1){5}}
+            \put(97,17){\vector(0,1){5}}
+            \put(0,10){\makebox(39,6)[l]{Valeurs réunies}}
+            \put(42,10){\colorbox{structure.fg!15}{\makebox(11,6){$a$}}}
+            \put(53,10){\colorbox{structure.fg!15}{\makebox(11,6){$b$}}}
+            \put(64,10){\colorbox{structure.fg!15}{\makebox(11,6){$c$}}}
+            \put(75,10){\colorbox{structure.fg!15}{\makebox(11,6){$d$}}}
+            \put(86,10){\colorbox{defenseAccent!20}{\makebox(11,6){$e$}}}
+            \put(97,10){\colorbox{defenseAccent!20}{\makebox(11,6){$f$}}}
+            \put(42,7){\line(1,0){66}}
+            \put(42,7){\line(0,1){2}}
+            \put(108,7){\line(0,1){2}}
+            \put(42,0){\makebox(66,4){Même mémoire}}
+        \end{picture}
+        \endgroup
+    \end{center}
+    La vue réunie partage la mémoire avec les valeurs par couche, ce qui évite
+    de les recopier pour l'agrégateur. Le calcul des gradients reste nécessaire.
+    % Le même principe s'applique aux paramètres et aux gradients.
+    % Le schéma représente l'un de ces ensembles, avec son propre bloc de mémoire.
+    % Une concaténation naïve recopierait le vecteur à chaque accès.
+\end{frame}

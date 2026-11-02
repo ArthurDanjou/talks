@@ -1,0 +1,156 @@
+% ================= VALIDATION EXPÉRIMENTALE =================
+% Deux expériences centralisées. Les durées comprennent la lecture des figures.
+
+% MIN 19:00 à 20:00. Poser la question et signaler le réglage hors garantie.
+\begin{frame}{2017 : \mkrum{} face à la moyenne}
+    \textbf{La sélection maintient-elle l'apprentissage sous attaque ?}
+    \medskip
+    \begin{columns}[T,onlytextwidth]
+        \begin{column}{0.47\textwidth}
+            \textbf{Données et modèle}
+            \par Spambase : courriels, 57 variables, deux catégories.
+            \par Deux couches cachées de 20 neurones.
+        \end{column}
+        \begin{column}{0.49\textwidth}
+            \textbf{Scénario byzantin}
+            \par 20 workers, dont 6 malhonnêtes.
+            \par \signflip{} inverse la moyenne des gradients honnêtes et l'amplifie par 10.
+        \end{column}
+    \end{columns}
+    \medskip
+    Données indépendantes et de même loi (IID).\\
+    300 tours. Pas $0{,}01$. Graine 42.
+    \begin{block}{Un réglage hors garantie}
+        Sous attaque : $\nselected=\nworkers-\nbyz=14$.
+        \par Sans attaque : $\nselected=\nworkers$, donc \mkrum{} coïncide avec la moyenne.
+    \end{block}
+    {\small Légendes : \textcode{Mean} désigne \average{} ; \textcode{f0} et \textcode{f6} indiquent 0 et 6 malhonnêtes.\par}
+    {\footnotesize Blanchard et al., NeurIPS 2017. Protocole adapté, observation hors garantie.\par}
+\end{frame}
+
+% MIN 20:00 à 21:00. Lire l'augmentation de la perte de la moyenne attaquée.
+\begin{frame}[t]{2017 : la perte de la moyenne diverge}
+    \setlength{\parskip}{0pt}
+    \begin{columns}[c,onlytextwidth]
+        \begin{column}{0.50\textwidth}
+            % Le PNG mesure 1600 par 956 pixels à 100 dpi, soit 0,72 bp par pixel.
+            % Le panneau de perte test conserve x de 132 à 760 et y de 80 à 360.
+            \includegraphics[width=\linewidth,
+                trim={95.04bp 429.12bp 604.8bp 57.6bp}, clip]{"Krum NeurIPS 2017.png"}
+        \end{column}
+        \begin{column}{0.46\textwidth}
+            \textbf{Moyenne attaquée}\\
+            À partir du tour 40, les poids deviennent indéfinis (NaN).
+            \par\medskip
+            \alert{Les 60\,\% reflètent la classe majoritaire.}\\
+            Le modèle n'a plus de performance valide.
+        \end{column}
+    \end{columns}
+    \par\smallskip
+    % Le panneau d'exactitude test est conservé en entier avec ses axes et sa légende.
+    % Son rectangle va de x=130 à x=1450 et de y=630 à y=906.
+    {\centering
+        \includegraphics[width=0.95\textwidth,
+            trim={93.6bp 36bp 108bp 453.6bp}, clip]{"Krum NeurIPS 2017.png"}
+        \par}
+    {\footnotesize Blanchard et al., NeurIPS 2017. Perte test en haut, exactitude test en bas.\par}
+\end{frame}
+
+% MIN 21:00 à 22:00. Comparer les pertes finies et borner la conclusion.
+\begin{frame}[t]{2017 : \mkrum{} continue à apprendre}
+    \setlength{\parskip}{0pt}
+    \begin{columns}[c,onlytextwidth]
+        \begin{column}{0.50\textwidth}
+            % Le panneau supérieur droit exclut déjà la moyenne attaquée.
+            % Le rectangle conserve x de 828 à 1448 et y de 80 à 360.
+            \includegraphics[width=\linewidth,
+                trim={596.16bp 429.12bp 109.44bp 57.6bp}, clip]{"Krum NeurIPS 2017.png"}
+        \end{column}
+        \begin{column}{0.46\textwidth}
+            \textbf{Zoom de $0{,}4$ à $0{,}8$.}\\
+            La moyenne attaquée est exclue.\\
+            \par\medskip
+            Exactitude : environ \textbf{77\,\% sous attaque}, contre \textbf{82\,\% sans attaque}.
+            \par\smallskip
+            $\nselected=14$, hors garantie.
+        \end{column}
+    \end{columns}
+    \par\smallskip
+    % Le même panneau complet d'exactitude garde toutes les courbes et sa légende.
+    {\centering
+        \includegraphics[width=0.95\textwidth,
+            trim={93.6bp 36bp 108bp 453.6bp}, clip]{"Krum NeurIPS 2017.png"}
+        \par}
+    {\footnotesize Blanchard et al., NeurIPS 2017. Perte test en haut, exactitude test en bas.\par}
+\end{frame}
+
+% MIN 22:00 à 23:20. Expliquer l'attaque ciblée et les deux filtres de Bulyan.
+% Le modèle est un réseau avec une couche cachée de 100 neurones.
+% La variante documentée de Bulyan sélectionne n-2f-2 vecteurs, au lieu de n-2f.
+% MultiKrum calcule ses scores en une passe. Ici, m=1 désigne bien Krum.
+\begin{frame}{2018 : une perturbation peut passer la sélection}
+    \textbf{Un gradient proche des honnêtes peut-il dégrader \krum{} ?}
+    \medskip
+    \begin{columns}[T,onlytextwidth]
+        \begin{column}{0.47\textwidth}
+            \textbf{Données et modèle}
+            \par MNIST : images de chiffres manuscrits.
+            \par Une couche cachée de 100 neurones.
+        \end{column}
+        \begin{column}{0.49\textwidth}
+            \textbf{Scénario byzantin}
+            \par 39 workers, dont 9 malhonnêtes.
+            \par \smallperturbation{} décale une coordonnée, $\gamma=4$ fixé.
+            \par Le vecteur reste sélectionné à chaque tour.
+        \end{column}
+    \end{columns}
+    \smallskip
+    Données IID. 300 tours. Graine 42.\\
+    \mkrum{} avec $\nselected=1$ est \krum{} ; \bulyan{} subit la même attaque.
+    \begin{block}{\bulyan{} ajoute un second filtre}
+        \begin{enumerate}
+            \item Sélection de vecteurs selon leurs distances.
+            \item Pour chaque coordonnée, moyenne des valeurs les plus proches de la médiane.
+        \end{enumerate}
+    \end{block}
+    {\footnotesize El-Mhamdi et al., ICML 2018. Protocole adapté.\par}
+\end{frame}
+
+% MIN 23:20 à 25:00. Lire le plateau et comparer à la référence sans attaque.
+\begin{frame}{2018 : \krum{} apprend, puis plafonne}
+    \setlength{\parskip}{0pt}
+    \centering
+    % Cadrages des panneaux perte test et exactitude du PNG de 2250 par 600 pixels.
+    % La résolution est d'environ 150 dpi, soit 0,48 bp par pixel.
+    % Le panneau central de perte d'entraînement est omis pour agrandir les deux autres.
+    % Les deux panneaux gardent tous leurs axes, légendes et courbes, sans déformation.
+    % Rectangles conservés : x de 20 à 745 et de 1515 à 2235, y de 60 à 580.
+    \includegraphics[width=0.44\textwidth,
+        trim={9.6bp 9.6bp 722.4bp 28.8bp}, clip]{"Hidden Vulnerability ICML 2018.png"}
+    \hfill
+    \includegraphics[width=0.44\textwidth,
+        trim={727.2bp 9.6bp 7.2bp 28.8bp}, clip]{"Hidden Vulnerability ICML 2018.png"}
+    \par\smallskip
+    \begin{tabular}{ccc}
+        \krum{} attaqué & \bulyan{} attaqué & Moyenne sans attaque \\
+        $\approx\mathbf{90\,\%}$ & $\approx\mathbf{94\,\%}$ & $\approx\mathbf{95\,\%}$
+    \end{tabular}
+    \par\medskip
+    {\small La perturbation passe la sélection de \krum{} à chaque tour et dégrade peu à peu le résultat.\par}
+    \par\smallskip
+    {\footnotesize Exactitude finale. El-Mhamdi et al., ICML 2018.\par}
+\end{frame}
+
+% MIN 25:00 à 25:30. Distinguer fidélité, répétabilité et portée empirique.
+\begin{frame}{Ce que ces expériences permettent de conclure}
+    Les expériences retrouvent les phénomènes visés, avec des adaptations
+    documentées.
+    \par\medskip
+    À code, graines, matériel et environnement déterministe fixés, deux
+    exécutions donnent les mêmes résultats bit à bit.
+    \par\medskip
+    Moins de trois minutes par expérience sur CPU, le processeur de la machine.
+    \par\medskip
+    L'équipe a aussi implémenté \monna{}, un protocole décentralisé
+    (Farhadkhani et al., ICML 2023).
+\end{frame}

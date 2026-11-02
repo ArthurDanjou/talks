@@ -1,0 +1,35 @@
+% MIN 6:30 à 7:15. Partir du constat de Sébastien avant d'énoncer la mission.
+\begin{frame}{Du copier-coller à des composants réutilisables}
+    Des chercheurs reprenaient le code de Sébastien par copier-coller, sans
+    toujours le comprendre.
+
+    Mon audit initial et mes reproductions centralisées de zéro m'ont confronté
+    à ces difficultés.
+
+    \begin{block}{La mission initiale du stage}
+        Réunir les outils nécessaires pour reproduire et comparer ces expériences.
+    \end{block}
+\end{frame}
+
+% MIN 7:15 à 8:00. Préciser mon périmètre, puis annoncer les trois couches.
+\begin{frame}{Krum : une bibliothèque en trois couches}
+    Krum est une bibliothèque Python fondée sur \textbf{PyTorch}, un outil
+    de calcul et d'entraînement des modèles.
+
+    \begin{tabular}{@{}ll@{}}
+        \textbf{Primitives} & Briques de calcul.\\[0.3em]
+        \textbf{Simulations} & Exécution des protocoles.\\[0.3em]
+        \textbf{Orchestration} & Gestion des campagnes d'expériences.
+    \end{tabular}
+
+    \begin{block}{Mes contributions dans ce projet collectif}
+        J'ai développé des agrégateurs et travaillé sur le composant \code{Model},
+        les architectures de modèles et les simulations centralisés. Le composant \code{Model}
+        donne accès aux paramètres sans les recopier.
+
+        J'ai aussi entièrement rédigé la documentation et les tutoriels.
+    \end{block}
+
+    \medskip
+    Sébastien Rouault et Peva Blanchard ont développé l'orchestrateur.
+\end{frame}
