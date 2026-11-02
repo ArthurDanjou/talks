@@ -13,6 +13,10 @@ on:
       - '20*/*/content/**'
       - '20*/*/assets/**'
       - '20*/*/latexmkrc'
+      - '20*/*/slides.md'
+      - '20*/*/package.json'
+      - '20*/*/bun.lock'
+      - '20*/*/bun.lockb'
       - 'site/**'
   workflow_dispatch:
 
@@ -28,6 +32,11 @@ jobs:
     steps:
       - name: Checkout
         uses: actions/checkout@v7
+
+      - name: Setup Bun
+        uses: oven-sh/setup-bun@v2
+        with:
+          bun-version: latest
 
       - name: Install TeX Live
         uses: zauguin/install-texlive@v4.4.0
@@ -46,11 +55,23 @@ jobs:
             lm
             xcolor
 
-      - name: Compile slides
+      - name: Compile LaTeX slides
         run: |
           for tex in 20*/*/slides.tex; do
             [ -f "$tex" ] || continue
             (cd "$(dirname "$tex")" && latexmk -pdf -interaction=nonstopmode slides.tex)
+          done
+
+      - name: Build Slidev decks
+        run: |
+          for deck in 20*/*/slides.md; do
+            [ -f "$deck" ] || continue
+            dir=$(dirname "$deck")
+            (
+              cd "$dir"
+              bun install --frozen-lockfile
+              bunx slidev build --base "/$dir/" --out dist
+            )
           done
 
       - name: Prepare site
@@ -61,6 +82,14 @@ jobs:
             [ -f "$pdf" ] || continue
             mkdir -p "dist/$(dirname "$pdf")"
             cp "$pdf" "dist/$pdf"
+          done
+          for deck in 20*/*/slides.md; do
+            [ -f "$deck" ] || continue
+            dir=$(dirname "$deck")
+            if [ -d "$dir/dist" ]; then
+              mkdir -p "dist/$dir"
+              cp -R "$dir/dist/." "dist/$dir/"
+            fi
           done
 
       - name: Deploy to Cloudflare Pages

@@ -3,9 +3,31 @@ set -eu
 
 cd "$(dirname "$0")"
 
+for deck in 20*/*/slides.md; do
+  [ -f "$deck" ] || continue
+  dir=$(dirname "$deck")
+  (
+    cd "$dir"
+    bun install --frozen-lockfile
+    bunx slidev build --base "/$dir/" --out dist
+  )
+done
+
 rm -rf dist
-mkdir -p dist/2026/soutenance-m2-krum
+mkdir -p dist
 cp site/_redirects dist/_redirects
-cp 2026/soutenance-m2-krum/slides.pdf dist/2026/soutenance-m2-krum/slides.pdf
+
+for pdf in 20*/*/slides.pdf; do
+  [ -f "$pdf" ] || continue
+  mkdir -p "dist/$(dirname "$pdf")"
+  cp "$pdf" "dist/$pdf"
+done
+
+for deck in 20*/*/slides.md; do
+  [ -f "$deck" ] || continue
+  dir=$(dirname "$deck")
+  mkdir -p "dist/$dir"
+  cp -R "$dir/dist/." "dist/$dir/"
+done
 
 wrangler pages deploy dist --project-name=talks --branch=master
