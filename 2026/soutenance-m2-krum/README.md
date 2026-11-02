@@ -22,6 +22,15 @@ dans `assets/header/`.
   réserve.
 - `assets/` contient les figures et les logos, sans dépendance externe.
 
+## Thème
+
+Le thème reprend les bleus `#01426A` et `#0085CA` de la
+[charte graphique de l'École polytechnique](https://www.polytechnique.edu/sites/default/files/content/pages/documents/2022-02/Charte%20graphique%202021%20%C3%89cole%20polytechnique_compressed.pdf).
+La couverture utilise les logos Dauphine et CMAP présents dans
+`assets/header/`. Le logo Polytechnique est la version RVB du
+[kit officiel horizontal](https://www.polytechnique.edu/sites/default/files/content/pages/documents/2022-02/Kit_logo_web_horizontal.zip),
+reprise sans modification.
+
 ## Notes
 
 - `notes/notes.md` contient la narration et le minutage.
