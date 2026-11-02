@@ -17,3 +17,8 @@ Slides &amp; code for my academic talks, in [Slidev](https://sli.dev) or LaTeX.
 
 Le script assemble `dist/` à partir de `site/index.html` et des PDF, puis publie
 sur le projet Cloudflare Pages `talks`.
+
+Le même déploiement est automatisé par GitHub Actions à chaque push sur
+`master`. Le workflow `.github/workflows/deploy.yml` demande deux secrets :
+`CLOUDFLARE_API_TOKEN`, avec le droit Cloudflare Pages: Edit, et
+`CLOUDFLARE_ACCOUNT_ID`.

@@ -1,0 +1,67 @@
+name: Deploy talks to Cloudflare Pages
+
+# Secrets requis dans le dépôt :
+# - CLOUDFLARE_API_TOKEN : jeton avec le droit Cloudflare Pages: Edit
+# - CLOUDFLARE_ACCOUNT_ID : identifiant du compte Cloudflare
+
+on:
+  push:
+    branches: [master]
+    paths:
+      - '20*/**'
+      - 'site/**'
+  workflow_dispatch:
+
+concurrency:
+  group: pages-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v7
+
+      - name: Install TeX Live
+        uses: zauguin/install-texlive@v4.4.0
+        with:
+          cache: true
+          cache_version: 1
+          packages: |
+            scheme-basic
+            latexmk
+            amsfonts
+            amsmath
+            appendixnumberbeamer
+            babel-french
+            beamer
+            graphics
+            lmodern
+            xcolor
+
+      - name: Compile slides
+        run: |
+          for tex in 20*/*/slides.tex; do
+            [ -f "$tex" ] || continue
+            (cd "$(dirname "$tex")" && latexmk -pdf -interaction=nonstopmode slides.tex)
+          done
+
+      - name: Prepare site
+        run: |
+          mkdir -p dist
+          cp site/index.html dist/index.html
+          for pdf in 20*/*/slides.pdf; do
+            [ -f "$pdf" ] || continue
+            mkdir -p "dist/$(dirname "$pdf")"
+            cp "$pdf" "dist/$pdf"
+          done
+
+      - name: Deploy to Cloudflare Pages
+        uses: cloudflare/wrangler-action@v4
+        with:
+          apiToken: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          accountId: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+          command: pages deploy dist --project-name=talks --commit-dirty=true
