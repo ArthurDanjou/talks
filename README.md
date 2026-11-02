@@ -15,7 +15,7 @@ Slides &amp; code for my academic talks, in [Slidev](https://sli.dev) or LaTeX.
 ./deploy.sh
 ```
 
-Le script assemble `dist/` à partir de `site/index.html` et des PDF, puis publie
+Le script assemble `dist/` à partir de `site/_redirects` et des PDF, puis publie
 sur le projet Cloudflare Pages `talks`.
 
 Le même déploiement est automatisé par GitHub Actions à chaque push sur

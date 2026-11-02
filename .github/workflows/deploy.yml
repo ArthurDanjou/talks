@@ -56,7 +56,7 @@ jobs:
       - name: Prepare site
         run: |
           mkdir -p dist
-          cp site/index.html dist/index.html
+          cp site/_redirects dist/_redirects
           for pdf in 20*/*/slides.pdf; do
             [ -f "$pdf" ] || continue
             mkdir -p "dist/$(dirname "$pdf")"
