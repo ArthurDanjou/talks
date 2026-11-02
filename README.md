@@ -23,6 +23,16 @@ Le même déploiement est automatisé par GitHub Actions à chaque push sur
 `CLOUDFLARE_API_TOKEN`, avec le droit Cloudflare Pages: Edit, et
 `CLOUDFLARE_ACCOUNT_ID`.
 
+## Ajouter un talk LaTeX
+
+Placer `slides.tex` dans `2026/mon-talk/`, avec ses fichiers `content/`,
+`assets/` et `latexmkrc`. Le workflow compile chaque `20*/*/slides.tex` et
+publie le PDF à `/2026/mon-talk/slides.pdf`.
+
+Le workflow installe un ensemble minimal de paquets TeX Live. Si le talk
+utilise un paquet supplémentaire, l'ajouter à la liste `packages` de
+`.github/workflows/deploy.yml`.
+
 ## Ajouter un talk Slidev
 
 Créer un dossier `2026/mon-talk/` avec `slides.md`, `package.json` et
