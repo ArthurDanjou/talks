@@ -26,8 +26,9 @@ Le même déploiement est automatisé par GitHub Actions à chaque push sur
 ## Ajouter un talk Slidev
 
 Créer un dossier `2026/mon-talk/` avec `slides.md`, `package.json` et
-`bun.lock`. Le workflow construit le deck avec `--base /2026/mon-talk/` et le
-publie à cette adresse.
+`bun.lock`. Tu peux en avoir plusieurs : chaque dossier `20*/*/` qui contient
+un `slides.md` est construit avec `--base /20xx/mon-talk/` et publié à cette
+adresse.
 
 Pour tester localement :
 

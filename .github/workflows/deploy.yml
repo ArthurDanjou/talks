@@ -8,15 +8,7 @@ on:
   push:
     branches: [master]
     paths:
-      - '20*/*/slides.tex'
-      - '20*/*/slides.pdf'
-      - '20*/*/content/**'
-      - '20*/*/assets/**'
-      - '20*/*/latexmkrc'
-      - '20*/*/slides.md'
-      - '20*/*/package.json'
-      - '20*/*/bun.lock'
-      - '20*/*/bun.lockb'
+      - '20*/**'
       - 'site/**'
   workflow_dispatch:
 
@@ -63,6 +55,7 @@ jobs:
           done
 
       - name: Build Slidev decks
+        # Chaque dossier 20*/*/ qui contient un slides.md est construit.
         run: |
           for deck in 20*/*/slides.md; do
             [ -f "$deck" ] || continue
