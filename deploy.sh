@@ -5,12 +5,7 @@ cd "$(dirname "$0")"
 
 for deck in 20*/*/slides.md; do
   [ -f "$deck" ] || continue
-  dir=$(dirname "$deck")
-  (
-    cd "$dir"
-    bun install --frozen-lockfile
-    bunx slidev build --base "/$dir/" --out dist
-  )
+  ./scripts/build-slidev.sh "$(dirname "$deck")"
 done
 
 rm -rf dist

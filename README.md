@@ -30,10 +30,11 @@ Créer un dossier `2026/mon-talk/` avec `slides.md`, `package.json` et
 un `slides.md` est construit avec `--base /20xx/mon-talk/` et publié à cette
 adresse.
 
-Pour tester localement :
+Pour construire un deck :
 
 ```sh
-cd 2026/mon-talk
-bun install
-bunx slidev build --base /2026/mon-talk/ --out dist
+./scripts/build-slidev.sh 2026/mon-talk
 ```
+
+Le script installe les dépendances et calcule automatiquement `--base` et
+`--out` à partir du chemin du dossier.
