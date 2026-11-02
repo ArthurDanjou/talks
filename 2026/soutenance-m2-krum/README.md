@@ -3,7 +3,7 @@
 Soutenance de master 2 ISF, Université Paris-Dauphine PSL.
 Stage au CMAP, École polytechnique, 2 novembre 2026.
 
-[PDF de la soutenance](https://talks-twu.pages.dev/2026/soutenance-m2-krum/slides.pdf)
+[PDF de la soutenance](https://talks.arthurdanjou.fr/2026/soutenance-m2-krum/slides.pdf)
 
 ## Build
 

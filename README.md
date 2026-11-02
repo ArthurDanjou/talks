@@ -6,7 +6,7 @@ Slides &amp; code for my academic talks, in [Slidev](https://sli.dev) or LaTeX.
 
 ###### 2026
 
-- `fr` **Krum, une bibliothèque pour l'agrégation robuste** — _Soutenance M2 ISF, CMAP, École polytechnique_ · [PDF](https://talks-twu.pages.dev/2026/soutenance-m2-krum/slides.pdf)
+- `fr` **Krum, une bibliothèque pour l'agrégation robuste** — _Soutenance M2 ISF, CMAP, École polytechnique_ · [PDF](https://talks.arthurdanjou.fr/2026/soutenance-m2-krum/slides.pdf)
 - `fr` **Robustesse Byzantine dans l'Apprentissage Distribué** — _Séminaire interne CMAP, Ecole Polytechnique_
 
 ## Deploy
